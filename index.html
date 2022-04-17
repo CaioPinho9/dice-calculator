@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="Perfil-Icone.ico" type="image/x-icom">
+    <title>Dice Calculator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito&family=Source+Sans+Pro&display=swap" rel="stylesheet"> 
+
+</head>
+<body>
+    <h1>Dice Calculator</h1>
+
+    <div id="chartD">
+    <div id="input">
+        <p>Insira a operação:</p>
+        <input id="text" type="text" name="name">
+        <button id="button" onclick="getText()">Calcular</button>
+    </div>
+    <div id="buttonD">
+        <button id="legend1">20%</button>
+        <button id="legend2">80%</button>
+        <canvas id="chart"></canvas>
+        <p id="legenda"></p>
+    </div>
+    </div>
+    <div id="learn">
+        <h2>Instruções:</h2>
+        <li><p>Vantagem: 2&gtd20</p>
+        <li><p>Desvantagem: 2&ltd20</p>
+        <li><p>Status: 4d6~1</p>
+        <li><p>Classe de Dificuldade: d20 CD15</p>
+
+    </div>    
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="script.js"></script>
+        
+
+</body>
+</html>
