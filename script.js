@@ -7,18 +7,22 @@ var config;
 var chart;
 var bonus = 0;
 var firstDice;
+var error = false;
 
 if (inicialText == null){document.getElementById('chart').style.visibility = "hidden"}
 var button = document.getElementsByTagName(button);
 button.onclick = function(){getText}
 function getText(){
+        error = false;
         var input = document.querySelector("#text");
         inicialText = input.value;
         if (inicialText != ""){
         document.getElementById('chart').style.visibility = "visible";
         input.value = null;
         expand();
-        createChart();
+        if (!error){
+            createChart();
+        }
     }
 }
 
@@ -64,12 +68,12 @@ function expand(){
         readDice(0);
 
         
-    } else if (Number.inicialText != 'NaN') {
+    } else if (inicialText.match(/^[0-9]+$/) != null) {
         diceArray[inicialText] = 1;
 
     } else {
         console.error('Expressão inválida')
-
+        error = true;
     }
 }
 
