@@ -1,22 +1,35 @@
 var inicialText;
+var text;
 var diceArray = new Array();
 var expandedText = new Array();
-var difficultyClass = 0;
+var difficultyClass;
+var bonus;
 let data;
 var config;
 var chart;
-var bonus = 0;
 var firstDice;
-var error = false;
+var error;
+var d100;
+var reRoll;
+var advantageBool;
+var disadvantageBool;
 
-if (inicialText == null){document.getElementById('chart').style.visibility = "hidden"}
+if (text == null){document.getElementById('chart').style.visibility = "hidden"}
 var button = document.getElementsByTagName(button);
 button.onclick = function(){getText}
 function getText(){
+        difficultyClass = 0;
+        bonus = 0;
+        reRoll = 0;
+        firstDice = true;
         error = false;
+        d100 = false;
+        advantageBool = false;
+        disadvantageBool = false;
         var input = document.querySelector("#text");
         inicialText = input.value;
-        if (inicialText != ""){
+        text = inicialText;
+        if (text != ""){
         document.getElementById('chart').style.visibility = "visible";
         input.value = null;
         expand();
@@ -28,30 +41,32 @@ function getText(){
 
 function expand(){
     diceArray = new Array();
-    inicialText = inicialText.replaceAll(" ", "");
-    inicialText = inicialText.toUpperCase();
-    inicialText = inicialText.replaceAll("CD", "DC");
-    inicialText =  inicialText.replaceAll("DC", "DC");
-    inicialText = inicialText.replaceAll("CA", "DC");
-    inicialText =  inicialText.replaceAll("AC", "DC");
+    text = text.replaceAll(" ", "");
+    text = text.toUpperCase();
+    text = text.replaceAll("CD", "DC");
+    text =  text.replaceAll("DC", "DC");
+    text = text.replaceAll("CA", "DC");
+    text =  text.replaceAll("AC", "DC");
 
-    if (inicialText.includes("DC")) {
+    if (text.includes("DC")) {
         var tempinicialtext;
-        tempinicialtext = inicialText.split("DC",2);
-        inicialText = tempinicialtext[0];
+        tempinicialtext = text.split("DC",2);
+        text = tempinicialtext[0];
         difficultyClass = tempinicialtext[1];
         console.log(difficultyClass);
     }
 
-    if (inicialText.includes("+")) {
-        expandedText = inicialText.split("+", 12);
+    if (text.includes("+")) {
+        expandedText = text.split("+", 12);
         for (var indexText = 0; indexText < expandedText.length; indexText++) {
 
             if (expandedText[indexText].includes("D") && firstDice) {
+                reroll(indexText);
                 readDice(indexText);
                 firstDice = false;
 
             } else if (expandedText[indexText].includes("D") && !firstDice) {
+                reroll(indexText);
                 var division = expandedText[indexText].split("D", 2);
                 var times = division[0];
                 var side = division[1];
@@ -63,13 +78,14 @@ function expand(){
             }
         }
 
-    } else if (inicialText.includes("D")) {
-        expandedText[0] = inicialText;
+    } else if (text.includes("D")) {
+        expandedText[0] = text;
+        reroll(0);
         readDice(0);
 
         
-    } else if (inicialText.match(/^[0-9]+$/) != null) {
-        diceArray[inicialText] = 1;
+    } else if (text.match(/^[0-9]+$/) != null) {
+        diceArray[text] = 1;
 
     } else {
         console.error('Invalid Expression')
@@ -83,10 +99,9 @@ function readDice(indexText) {
     
     //        Advantage Ex: d20>d20
             if (expandedText[indexText].includes(">") || expandedText[indexText].includes("<")) {
-    
-                advantage = true;
+                advantageBool = true;
                 if (expandedText[indexText].includes("<")) {
-                    disadvantage = true;
+                    disadvantageBool = true;
                 }
     
                 expandedText[indexText] = expandedText[indexText].replace(">", "");
@@ -97,7 +112,8 @@ function readDice(indexText) {
                 division = expandedText[indexText].split("D", 2);
                 var times = division[0];
                 var sides = division[1];
-                specialCase(times, sides);
+                var reduceTimes = times-1;
+                specialCase(times, sides, reduceTimes);
     
             } else if (expandedText[indexText].includes("~")){
                 var reduce = new Array();
@@ -105,12 +121,13 @@ function readDice(indexText) {
                 reduce = expandedText[indexText].split("~",2);
                 division = reduce[0].split("D", 2);
     
-                advantage = true;
+                advantageBool = true;
+                disadvantageBool = false;
     
                 var times = division[0];
                 var sides = division[1];
-                reduceTimes = reduce[1]+1;
-                specialCase(times, sides);
+                reduceTimes = reduce[1];
+                specialCase(times, sides, reduceTimes);
     
     //        Soma Ex: 4d6
             } else {
@@ -130,11 +147,30 @@ function readDice(indexText) {
         }
 
 function addDice(times, side){
+
+    if (side == 100) {
+        d100 = true;
+        disadvantageBool = !disadvantageBool;
+    }
+
     for (var i = 0; i<times; i++) {
         var tempDiceArray = new Array();
         if (diceArray.length == 0) {
             for (var j = 1; j<=side; j++) {
-                diceArray[j] = 1;
+                if (tempDiceArray[j] == null) {
+                    tempDiceArray[j] = 1;
+                } else {
+                    tempDiceArray[j]++;
+                }
+                if (j <= reRoll && reRoll != 0) {
+                    for (var k = Number(reRoll)+1; k<=side; k++) {
+                        if (tempDiceArray[k] == null) {
+                            tempDiceArray[k] = 1;
+                        } else {
+                            tempDiceArray[k]++;
+                        }
+                    }
+                }
             }
         } else {
             for (var j = 0; j<diceArray.length; j++) {
@@ -146,13 +182,116 @@ function addDice(times, side){
                         } else {
                             tempDiceArray[j+s] += diceArray[j];
                         }
+                        if (s <= reRoll && reRoll != 0) {
+                            for (var k = Number(reRoll)+1; k<=side; k++) {
+                                if (tempDiceArray[k] == null) {
+                                    tempDiceArray[k] = 1;
+                                } else {
+                                    tempDiceArray[k]++;
+                                }
+                            }
+                        }
                     }
                     
                 }
             }
-            diceArray = tempDiceArray;
+        }
+        diceArray = tempDiceArray;
+    }
+}
+
+function reroll(indexText){
+    var division = new Array();
+    if (expandedText[indexText].includes("R")) {
+        division = expandedText[indexText].split("R", 2);
+        expandedText[indexText] = division[0];
+    }
+    reRoll = division[1];
+}
+
+function specialCase(times, side, reduceTimes){
+    var dices = new Array(Number(times));
+    dices.fill(1);
+
+    if (side == 100) {
+        d100 = true;
+        disadvantageBool = !disadvantageBool;
+    }
+//          [1,1,1,1]
+    var lastIndex = 0;
+
+    for (var index = 0; index < dices.length;) {
+
+//            possibility[Arrays.stream(diceArray).sum()] += 1;
+
+//                Saves to add
+        var sortDices = [...dices];
+        if (advantageBool) {
+            advantage(sortDices, reduceTimes);
+        } else {
+            var j = dices.reduce((a, b) => a + b, 0);
+            if (diceArray[j] == null) {
+                diceArray[j] = 1;
+            } else {
+                diceArray[j] ++;
+            }
+        }
+
+
+        console.log(dices);
+
+//                Checks all index
+        for (var check = 0; check<=lastIndex; check++) {
+
+//                    When the array is completed, it breaks the loop Ex: 4d6 [6,6,6,6]
+            if (dices.reduce((a, b) => a + b, 0) == side*times) {
+                index = dices.length;
+                break;
+            }
+
+            if (index == lastIndex && dices[lastIndex] >= side) {
+                index = 0;
+                dices[lastIndex] = 1;
+                lastIndex++;
+                dices[lastIndex]++;
+                break;
+            }
+
+//                    When this array[index] is full it resets and increases the index
+            if (dices[index] == side) {
+                dices[index] = 1;
+                index += 1;
+
+//                    If it's not full the array increases
+            } else {
+                dices[index]++;
+                index = 0;
+                break;
+            }
         }
     }
+}
+
+function advantage(sortDices, reduceTimes) {
+
+    if (!disadvantageBool) {
+        sortDices.sort(function(a, b){return a - b});
+        console.log(sortDices);
+    } else {
+        sortDices.sort(function(a, b){return b - a});
+    }
+
+    for (var i = 0; i<reduceTimes; i++) {
+        sortDices[i] = 0;
+    }
+    var j = sortDices.reduce((a, b) => a + b, 0);
+    if (diceArray[j] == null) {
+        diceArray[j] = 1;
+    } else {
+        diceArray[j] ++;
+    }
+    console.log(diceArray);
+
 }
 
 function createChart(){
@@ -201,11 +340,20 @@ function createChart(){
     var label = 100;
     if (difficultyClass != 0){
         for (var i = 0; i<probabilityArray.length; i++) {
-            if ((i+l)<difficultyClass) {
-                backgroundColor.push('red');
-                label -= probabilityArray[i];
+            if (!d100){
+                if ((i+l)<difficultyClass) {
+                    backgroundColor.push('red');
+                    label -= probabilityArray[i];
+                } else {
+                    backgroundColor.push('rgb(20, 152, 222)');
+                }
             } else {
-                backgroundColor.push('rgb(20, 152, 222)');
+                if ((i+l)>difficultyClass) {
+                    backgroundColor.push('red');
+                    label -= probabilityArray[i];
+                } else {
+                    backgroundColor.push('rgb(20, 152, 222)');
+                }
             }
         }
         var legend1 = document.getElementById('legend1');
@@ -261,6 +409,7 @@ function createChart(){
             },
             scales: {
                 x: {
+                    reverse: d100,
                     ticks: {
                         color: 'white'
                     }
