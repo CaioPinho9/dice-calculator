@@ -15,6 +15,13 @@ var advantageBool;
 var disadvantageBool;
 var reduce;
 
+function checkError(times, side){
+    if (String(times).match(/^[0-9]+$/) == null || String(side).match(/^[0-9]+$/) == null) {
+        error = true;
+        console.error();
+    }
+}
+
 if (text == null){document.getElementById('chart').style.visibility = "hidden"}
 var button = document.getElementsByTagName(button);
 button.onclick = function(){getText}
@@ -85,7 +92,6 @@ function expand(){
         reroll(0);
         readDice(0);
 
-        
     } else if (text.match(/^[0-9]+$/) != null) {
         diceArray[text] = 1;
 
@@ -136,13 +142,18 @@ function readDice(indexText) {
                 var division = new Array();
                 division = expandedText[indexText].split("D", 2);
                 var times;
+                var side;
                 if (!division[0] == "") {
                     times = division[0];
                 } else {
                     times = 1;
                 }
+                if (!division[1] == "") {
+                    side = division[1];
+                } else {
+                    side = 20;
+                }
     
-                var side = division[1];
                 addDice(times, side);
     
             }
@@ -150,6 +161,7 @@ function readDice(indexText) {
 
 function addDice(times, side){
 
+    checkError(times, side);
     if (side == 100) {
         d100 = true;
         disadvantageBool = !disadvantageBool;
@@ -200,6 +212,7 @@ function addDice(times, side){
         }
         diceArray = tempDiceArray;
     }
+    reRoll = 0;
 }
 
 function reroll(indexText){
@@ -207,11 +220,12 @@ function reroll(indexText){
     if (expandedText[indexText].includes("R")) {
         division = expandedText[indexText].split("R", 2);
         expandedText[indexText] = division[0];
+        reRoll = division[1];
     }
-    reRoll = division[1];
 }
 
 function specialCase(times, side, reduceTimes){
+    checkError(times, side);
     var dices = new Array(Number(times));
     dices.fill(1);
 
@@ -278,6 +292,7 @@ function specialCase(times, side, reduceTimes){
         } else {
             diceArray[1] = diceArray[2]/2;
         }
+        reRoll = 0;
     }
 }
 
@@ -387,8 +402,10 @@ function createChart(){
         legend2.style.display = 'inline';
     } else {
         var legend1 = document.getElementById('legend1');
+        var legend2 = document.getElementById('legend2');
         legend1.style.backgroundColor = 'rgb(20, 152, 222)';
         legend1.style.display = 'block';
+        legend2.style.display = 'none';
         legend1.innerHTML = '100%';
         backgroundColor.push('rgb(20, 152, 222)')
     }
