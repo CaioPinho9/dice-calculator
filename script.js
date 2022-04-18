@@ -72,7 +72,7 @@ function expand(){
         diceArray[inicialText] = 1;
 
     } else {
-        console.error('Expressão inválida')
+        console.error('Invalid Expression')
         error = true;
     }
 }
