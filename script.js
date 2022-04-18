@@ -13,6 +13,7 @@ var d100;
 var reRoll;
 var advantageBool;
 var disadvantageBool;
+var reduce;
 
 if (text == null){document.getElementById('chart').style.visibility = "hidden"}
 var button = document.getElementsByTagName(button);
@@ -26,6 +27,7 @@ function getText(){
         d100 = false;
         advantageBool = false;
         disadvantageBool = false;
+        reduce = false;
         var input = document.querySelector("#text");
         inicialText = input.value;
         text = inicialText;
@@ -174,7 +176,7 @@ function addDice(times, side){
             }
         } else {
             for (var j = 0; j<diceArray.length; j++) {
-                if (diceArray[j] != 0) {
+                if (diceArray[j] != null) {
                     console.log(diceArray);
                     for (var s = 1; s<=side; s++) {
                         if (tempDiceArray[j+s] == null) {
@@ -184,10 +186,10 @@ function addDice(times, side){
                         }
                         if (s <= reRoll && reRoll != 0) {
                             for (var k = Number(reRoll)+1; k<=side; k++) {
-                                if (tempDiceArray[k] == null) {
-                                    tempDiceArray[k] = 1;
+                                if (tempDiceArray[k+j] == null) {
+                                    tempDiceArray[k+j] = 1;
                                 } else {
-                                    tempDiceArray[k]++;
+                                    tempDiceArray[k+j]++;
                                 }
                             }
                         }
@@ -270,6 +272,13 @@ function specialCase(times, side, reduceTimes){
             }
         }
     }
+    if (!d100 && reRoll != 0 && advantageBool) {
+        if (!disadvantageBool) {
+            diceArray[1] = 0;
+        } else {
+            diceArray[1] = diceArray[2]/2;
+        }
+    }
 }
 
 function advantage(sortDices, reduceTimes) {
@@ -312,17 +321,25 @@ function createChart(){
     while (diceArray[j] == null) {j++;}     
     var k = j;
     for (var i = 0; i<diceArray.length-k; i++) {
+        
         if (diceArray[j] != null) {
+            
           tempDiceArray[i] = diceArray[j];
           j++;
         }
     }
     diceArray = tempDiceArray;
-
+    var average = 0;
     var probabilityArray = new Array();
     for (var i = 0; i<diceArray.length; i++) {
         probabilityArray[i] = ((diceArray[i]/diceArray.reduce((a, b) => a + b, 0))*100).toFixed(2);
+        average += diceArray[i]*i;
     }
+    average = average/diceArray.reduce((a, b) => a + b, 0);
+    average += k;
+    average = average.toFixed(2);
+    document.getElementById("average").innerHTML = "Média: " + average;
+    document.getElementById("average").style.visibility = "visible";
 
     console.log(diceArray);
 
