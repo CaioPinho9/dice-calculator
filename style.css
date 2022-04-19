@@ -1,3 +1,8 @@
+#top {
+    margin-top: 10px;
+    padding: 10px;
+}
+
 body {
     font-family: 'Nunito', sans-serif;
     background-image: url("Perfil Icone.png");
@@ -111,4 +116,12 @@ button{
 
 #legend1, #legend2{
     display: none;
+}
+
+#learn {
+    display: block;
+}
+
+#bottom {
+    padding-bottom: 10px;
 }
