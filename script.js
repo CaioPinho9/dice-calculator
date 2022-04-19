@@ -77,8 +77,18 @@ function expand(){
             } else if (expandedText[indexText].includes("D") && !firstDice) {
                 reroll(indexText);
                 var division = expandedText[indexText].split("D", 2);
-                var times = division[0];
-                var side = division[1];
+                var times;
+                var side;
+                if (!division[0] == "") {
+                    times = division[0];
+                } else {
+                    times = 1;
+                }
+                if (!division[1] == "") {
+                    side = division[1];
+                } else {
+                    side = 20;
+                }
                 addDice(times, side);
 
             } else {
