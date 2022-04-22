@@ -100,8 +100,21 @@ li{
     visibility: hidden;
 }
 
-#buttonD{
-    text-align:center;
+#buttons {
+    visibility: hidden;
+}
+
+#roll {
+    width: 57px;
+    margin-top: 3px;
+    background-color: rgb(20, 152, 222);
+}
+
+#number {
+    background-color: rgba(0, 0, 0, 0);
+    color: rgb(20, 152, 222);
+    font-weight: 1000;
+    text-align: center;
 }
 
 button{
@@ -112,6 +125,10 @@ button{
     border-radius: 5px;
     padding: 5px;
     margin: 0 auto;
+}
+
+#legendD{
+    text-align:center;
 }
 
 #legend1, #legend2{

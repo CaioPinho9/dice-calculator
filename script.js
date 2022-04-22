@@ -24,8 +24,167 @@ function checkError(times, side){
 }
 
 if (text == null){document.getElementById('chart').style.visibility = "hidden"}
-var button = document.getElementsByTagName(button);
-button.onclick = function(){getText}
+var calculate = document.getElementById('button');
+calculate.onclick = function(){getText()}
+var rollB = document.getElementById('roll');
+rollB.onclick = function(){roll()}
+
+function roll() {
+    result = document.getElementById('number');
+    text = inicialText;
+    text = text.toUpperCase();
+    text = text.replaceAll(" ", "");
+    text = text.replaceAll("-", "+-");
+    text = text.replaceAll("CD", "DC");
+    text =  text.replaceAll("DC", "DC");
+    text = text.replaceAll("CA", "DC");
+    text =  text.replaceAll("AC", "DC");
+    var number = 0;
+    var bonus = 0;
+
+    if (text.includes("DC")) {
+        var tempinicialtext;
+        tempinicialtext = text.split("DC",2);
+        text = tempinicialtext[0];
+    }
+
+    if (text.includes("+")) {
+        expandedText = text.split("+", 12);
+        for (var indexText = 0; indexText < expandedText.length; indexText++) {
+
+            add = 1;
+            if (expandedText[indexText].includes("-")){
+                add = -1;
+                expandedText[indexText] = expandedText[indexText].replaceAll("-", "");
+            }
+
+            if (expandedText[indexText].includes("D")) {
+                reroll(indexText);
+                number += readRoll(indexText); 
+            } else {
+                bonus += Number(expandedText[indexText]*add);
+                number += bonus;
+            }
+            add = 1;
+        }
+
+    } else if (text.includes("D")) {
+        expandedText[0] = text;
+        reroll(0);
+        number += readRoll(0);
+
+    } else if (text.match(/^[0-9]+$/) != null) {
+        number = text;
+    }
+    result.innerHTML = number;
+    result.style.visibility = "visible";
+
+}
+
+function readRoll(indexText) {
+    var division = expandedText[indexText].split("D", 2);
+    var times;
+    var side;
+    var number = 0;
+    var tempNumber;
+
+    if (expandedText[indexText].includes(">") || expandedText[indexText].includes("<")) {
+        advantageBool = true;
+        if (expandedText[indexText].includes("<")) {
+            disadvantageBool = true;
+        }
+
+        expandedText[indexText] = expandedText[indexText].replace(">", "");
+        expandedText[indexText] = expandedText[indexText].replace("<", "");
+
+//            Divide the expression in 2 parts, and check which one is just the side of a dice
+        var division = new Array();
+        var tempNumber = new Array();
+        division = expandedText[indexText].split("D", 2);
+        var times = division[0];
+        var side = division[1];
+        var reduceTimes = times-1;
+
+        for (var i = 0; i<times; i++) {
+            tempNumber[i] = Math.floor(Math.random() * side) + 1;
+            if (tempNumber == reRoll) {
+                tempNumber[i] = Math.floor(Math.random() * side) + 1;
+            }
+        }
+        
+        if (!disadvantageBool) {
+            tempNumber.sort(function(a, b){return a - b});
+        } else {
+            tempNumber.sort(function(a, b){return b - a});
+        }
+    
+        for (var i = 0; i<reduceTimes; i++) {
+            tempNumber[i] = 0;
+        }
+
+        number += tempNumber.reduce((a, b) => a + b, 0);
+        
+
+    } else if (expandedText[indexText].includes("~")){
+        var reduce = new Array();
+        var division = new Array();
+        reduce = expandedText[indexText].split("~",2);
+        division = reduce[0].split("D", 2);
+
+        advantageBool = true;
+        disadvantageBool = false;
+
+        var times = division[0];
+        var side = division[1];
+        reduceTimes = reduce[1];
+
+        for (var i = 0; i<times; i++) {
+            tempNumber[i] = Math.floor(Math.random() * side) + 1;
+            if (tempNumber[i] == reRoll) {
+                tempNumber[i] = Math.floor(Math.random() * side) + 1;
+            }
+        }
+
+        if (!disadvantageBool) {
+            tempNumber.sort(function(a, b){return a - b});
+        } else {
+            tempNumber.sort(function(a, b){return b - a});
+        }
+    
+        for (var i = 0; i<reduceTimes; i++) {
+            tempNumber[i] = 0;
+        }
+
+        number += tempNumber.reduce((a, b) => a + b, 0);
+
+//        Soma Ex: 4d6
+    } else {
+        if (number == null) {
+            number = 0;
+        }
+
+        if (!division[0] == "") {
+            times = division[0];
+        } else {
+            times = 1;
+        }
+        if (!division[1] == "") {
+            side = division[1];
+        } else {
+            side = 20;
+        }
+
+        for (var i = 0; i<times; i++) {
+            tempNumber = Math.floor(Math.random() * side) + 1;
+            if (tempNumber == reRoll) {
+                tempNumber = Math.floor(Math.random() * side) + 1;
+            }
+            number += tempNumber*add;
+        }
+    } 
+    return number;
+}
+
 function getText(){
         difficultyClass = 0;
         bonus = 0;
@@ -41,6 +200,7 @@ function getText(){
         text = inicialText;
         if (text != ""){
         document.getElementById('chart').style.visibility = "visible";
+        document.getElementById('buttons').style.visibility = "visible";
         input.value = null;
         expand();
         if (!error){
@@ -326,9 +486,6 @@ function specialCase(times, side, reduceTimes){
             var j = dices.reduce((a, b) => a + b, 0);
             diceArray = increases(tempDiceArray,j,0,false)
         }
-
-
-        console.log(dices);
 
 //                Checks all index
         for (var check = 0; check<=lastIndex; check++) {
