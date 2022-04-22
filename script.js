@@ -128,6 +128,7 @@ function readRoll(indexText) {
     } else if (expandedText[indexText].includes("~")){
         var reduce = new Array();
         var division = new Array();
+        var tempNumber = new Array();
         reduce = expandedText[indexText].split("~",2);
         division = reduce[0].split("D", 2);
 
