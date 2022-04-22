@@ -13,10 +13,11 @@ var d100;
 var reRoll;
 var advantageBool;
 var disadvantageBool;
-var reduce;
+var add;
 
 function checkError(times, side){
-    if (String(times).match(/^[0-9]+$/) == null || String(side).match(/^[0-9]+$/) == null) {
+    if (String(times).match(/^[0-9]+$/) == null || String(side).match(/^[0-9]+$/) == null
+        || times == 0 || side == 0) {
         error = true;
         console.error();
     }
@@ -34,7 +35,7 @@ function getText(){
         d100 = false;
         advantageBool = false;
         disadvantageBool = false;
-        reduce = false;
+        add = 1;
         var input = document.querySelector("#text");
         inicialText = input.value;
         text = inicialText;
@@ -50,8 +51,9 @@ function getText(){
 
 function expand(){
     diceArray = new Array();
-    text = text.replaceAll(" ", "");
     text = text.toUpperCase();
+    text = text.replaceAll(" ", "");
+    text = text.replaceAll("-", "+-");
     text = text.replaceAll("CD", "DC");
     text =  text.replaceAll("DC", "DC");
     text = text.replaceAll("CA", "DC");
@@ -68,6 +70,13 @@ function expand(){
     if (text.includes("+")) {
         expandedText = text.split("+", 12);
         for (var indexText = 0; indexText < expandedText.length; indexText++) {
+
+            add = 1;
+            if (expandedText[indexText].includes("-")){
+                add = -1;
+                expandedText[indexText] = expandedText[indexText].replaceAll("-", "");
+        
+            }
 
             if (expandedText[indexText].includes("D") && firstDice) {
                 reroll(indexText);
@@ -89,12 +98,24 @@ function expand(){
                 } else {
                     side = 20;
                 }
-                addDice(times, side);
-
+                if (add > 0) {
+                    addDice(times, side);
+                } else {
+                    minusDice(times, side);
+                }
+                
             } else {
                 bonus += Number(expandedText[indexText]);
                 console.log(bonus);
+                var tempDiceArray = new Array();
+                for (var i = 0; i<diceArray.length; i++) {
+                    if (diceArray[i] != null){
+                        tempDiceArray = increases(tempDiceArray,i,bonus,true);
+                    }
+                }
+                diceArray = tempDiceArray;
             }
+            add = 1;
         }
 
     } else if (text.includes("D")) {
@@ -167,7 +188,70 @@ function readDice(indexText) {
                 addDice(times, side);
     
             }
+}
+
+function increases(tempDiceArray, j, s, next) {
+
+    if (j+s*add < 0) {
+        if (diceArray[0] != null) {
+            if (tempDiceArray[0] == null) {
+                tempDiceArray[0] = diceArray[0]+diceArray[j];
+            } else {
+                tempDiceArray[0] += diceArray[0]+diceArray[j];
+            }
+        } else {
+            if (tempDiceArray[0] == null) {
+                tempDiceArray[0] = diceArray[j];
+            } else {
+                tempDiceArray[0] += diceArray[j];
+            }
         }
+    } else if (add < 0) {
+        if (tempDiceArray[j+s*add] == null) {
+            tempDiceArray[j+s*add] = diceArray[j];
+        } else {
+            tempDiceArray[j+s*add] += diceArray[j];
+        }
+    } else if (s == 0 && !next) {
+        //First, Vantagem
+        if (tempDiceArray[j] == null) {
+            tempDiceArray[j] = add;
+        } else {
+            tempDiceArray[j] += add;
+        }
+    } else if (next){
+        //Next
+        if (tempDiceArray[j+s] == null) {
+            tempDiceArray[j+s] = diceArray[j];
+        } else {
+            tempDiceArray[j+s] += diceArray[j];
+        }
+    } else if (!next) {
+        //Reroll
+        if (tempDiceArray[s] == null) {
+            tempDiceArray[s] = add;
+        } else {
+            tempDiceArray[s] += add;
+        }
+    }
+    console.log(tempDiceArray);
+    return tempDiceArray;
+}
+
+function minusDice(times, side) {
+    for (var i = 0; i<times; i++) {
+        var tempDiceArray = new Array();
+        for (var j = 0; j<diceArray.length; j++) {
+            if (diceArray[j] != null) {
+                for (var s = 1; s<=side; s++) {
+                    increases(tempDiceArray,j,s,true)
+                }
+            }
+        }
+    }
+    console.log(tempDiceArray);
+    diceArray = tempDiceArray;
+}
 
 function addDice(times, side){
 
@@ -181,18 +265,10 @@ function addDice(times, side){
         var tempDiceArray = new Array();
         if (diceArray.length == 0) {
             for (var j = 1; j<=side; j++) {
-                if (tempDiceArray[j] == null) {
-                    tempDiceArray[j] = 1;
-                } else {
-                    tempDiceArray[j]++;
-                }
+                tempDiceArray = increases(tempDiceArray,j,0,false)
                 if (j <= reRoll && reRoll != 0) {
                     for (var k = Number(reRoll)+1; k<=side; k++) {
-                        if (tempDiceArray[k] == null) {
-                            tempDiceArray[k] = 1;
-                        } else {
-                            tempDiceArray[k]++;
-                        }
+                        tempDiceArray = increases(tempDiceArray,j,k,false)
                     }
                 }
             }
@@ -201,18 +277,10 @@ function addDice(times, side){
                 if (diceArray[j] != null) {
                     console.log(diceArray);
                     for (var s = 1; s<=side; s++) {
-                        if (tempDiceArray[j+s] == null) {
-                            tempDiceArray[j+s] = diceArray[j];
-                        } else {
-                            tempDiceArray[j+s] += diceArray[j];
-                        }
+                        tempDiceArray = increases(tempDiceArray,j,s,true)
                         if (s <= reRoll && reRoll != 0) {
                             for (var k = Number(reRoll)+1; k<=side; k++) {
-                                if (tempDiceArray[k+j] == null) {
-                                    tempDiceArray[k+j] = 1;
-                                } else {
-                                    tempDiceArray[k+j]++;
-                                }
+                                tempDiceArray = increases(tempDiceArray,j,k,true)
                             }
                         }
                     }
@@ -256,11 +324,7 @@ function specialCase(times, side, reduceTimes){
             advantage(sortDices, reduceTimes);
         } else {
             var j = dices.reduce((a, b) => a + b, 0);
-            if (diceArray[j] == null) {
-                diceArray[j] = 1;
-            } else {
-                diceArray[j] ++;
-            }
+            diceArray = increases(tempDiceArray,j,0,false)
         }
 
 
@@ -319,11 +383,7 @@ function advantage(sortDices, reduceTimes) {
         sortDices[i] = 0;
     }
     var j = sortDices.reduce((a, b) => a + b, 0);
-    if (diceArray[j] == null) {
-        diceArray[j] = 1;
-    } else {
-        diceArray[j] ++;
-    }
+    diceArray = increases(diceArray,j,0,false)
     console.log(diceArray);
 
 }
@@ -334,16 +394,13 @@ function createChart(){
         document.getElementById('legenda').innerHTML = inicialText;
     }
 
-    //bonus
-    var tempDiceArray = new Array();
-    for (var i = 0; i<diceArray.length; i++) {
-        tempDiceArray[i+bonus] = diceArray[i];
-    }
-    diceArray = tempDiceArray;
+    console.log(diceArray);
 
     var tempDiceArray = new Array();
     var j = 0;
-    while (diceArray[j] == null) {j++;}     
+    while (diceArray[j] === null || isNaN(diceArray[j])) {
+        j++;
+    }     
     var k = j;
     for (var i = 0; i<diceArray.length-k; i++) {
         
