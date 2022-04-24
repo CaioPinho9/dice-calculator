@@ -135,6 +135,46 @@ button{
     display: none;
 }
 
+#historyB {
+    margin-left: 10px;
+    visibility: hidden;
+}
+
+#history {
+    max-height: 140px;
+    max-width: 800px;
+    min-height: 140px;
+    min-width: 400px;
+    border: 5px solid rgb(20, 152, 222);
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 40px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 5px 3px 5px 3px rgba(11, 15, 20, 0.719);    
+    margin: 0 auto;
+    text-align: center;
+    display: none;
+}
+
+#chart1,#chart2,#chart3 {
+    display: inline;
+    padding: auto;
+    margin: 10px;
+    padding: 10px;
+    width: 250px;
+    height: 300px;
+    border: 3px solid rgb(20, 152, 222);
+    border-radius: 10px;
+    visibility: visible;
+}
+
+#chart4,#chart5,#chart6 {
+    display: none;
+    width: 250px;
+    height: 300px;
+}
+
 #learn {
     display: block;
 }

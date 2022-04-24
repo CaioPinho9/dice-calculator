@@ -6,7 +6,7 @@ var difficultyClass;
 var bonus;
 let data;
 var config;
-var chart;
+var chart,chart1,chart2,chart3;
 var firstDice;
 var error;
 var d100;
@@ -14,6 +14,8 @@ var reRoll;
 var advantageBool;
 var disadvantageBool;
 var add;
+var charts = new Array();
+var chartIndex = 0;
 
 function checkError(times, side){
     if (String(times).match(/^[0-9]+$/) == null || String(side).match(/^[0-9]+$/) == null
@@ -28,6 +30,8 @@ var calculate = document.getElementById('button');
 calculate.onclick = function(){getText()}
 var rollB = document.getElementById('roll');
 rollB.onclick = function(){roll()}
+var historyB = document.getElementById('historyB');
+historyB.onclick = function(){historyOn()}
 
 function roll() {
     result = document.getElementById('number');
@@ -202,6 +206,7 @@ function getText(){
         if (text != ""){
         document.getElementById('chart').style.visibility = "visible";
         document.getElementById('buttons').style.visibility = "visible";
+        document.getElementById('historyB').style.visibility = "visible";
         input.value = null;
         expand();
         if (!error){
@@ -704,4 +709,72 @@ function renderGraph() {
         document.getElementById('chart'),
         config
     );
+
+    for (var i = 2; i>0; i--) {
+        charts[i] = charts[i-1];
+    }
+    charts[0] = config;
+
+    if (chartIndex >= 0){
+        renderHistory(1,charts[0],'chart1');
+        document.getElementById('chart4').style.display = "inline-block";
+    } 
+    if (chartIndex > 0){
+        renderHistory(2,charts[1],'chart2');
+        document.getElementById('chart5').style.display = "inline-block";
+    } 
+    if (chartIndex > 1){
+        renderHistory(3,charts[2],'chart3');
+        document.getElementById('chart6').style.display = "inline-block";
+    } 
+
+    chartIndex++
+    
+}
+
+function historyOn() {
+    if (document.getElementById('history').style.display != 'none') {
+        document.getElementById('history').style.display = 'none';
+    } else {
+        document.getElementById('history').style.display = 'block';
+    }
+}
+
+function renderHistory(chart,config,id) {
+
+    // Destroy old graph
+    if (chart == 1) {
+        if (chart1) {
+            chart1.destroy();
+        }
+    
+        // Render chart
+        chart1 = new Chart(
+            document.getElementById(id),
+            config
+        );
+    }
+    if (chart == 2) {
+        if (chart2) {
+            chart2.destroy();
+        }
+    
+        // Render chart
+        chart2 = new Chart(
+            document.getElementById(id),
+            config
+        );
+    }
+    if (chart == 3) {
+        if (chart3) {
+            chart3.destroy();
+        }
+    
+        // Render chart
+        chart3 = new Chart(
+            document.getElementById(id),
+            config
+        );
+    }
+    
 }
