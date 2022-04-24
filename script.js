@@ -203,10 +203,30 @@ function getText(){
         var input = document.querySelector("#text");
         inicialText = input.value;
         text = inicialText;
+
+        for (var i = 2; i>0; i--) {
+            charts[i] = charts[i-1];
+        }
+        charts[0] = config;
+
+        if (chartIndex > 0){
+            document.getElementById('historyB').style.visibility = "visible";
+            renderHistory(1,charts[0],'chart1');
+            document.getElementById('chart4').style.display = "inline-block";
+        } 
+        if (chartIndex > 1){
+            renderHistory(2,charts[1],'chart2');
+            document.getElementById('chart5').style.display = "inline-block";
+        } 
+        if (chartIndex > 2){
+            renderHistory(3,charts[2],'chart3');
+            document.getElementById('chart6').style.display = "inline-block";
+        } 
+        chartIndex++
+
         if (text != ""){
         document.getElementById('chart').style.visibility = "visible";
         document.getElementById('buttons').style.visibility = "visible";
-        document.getElementById('historyB').style.visibility = "visible";
         input.value = null;
         expand();
         if (!error){
@@ -554,7 +574,7 @@ function advantage(sortDices, reduceTimes) {
 function createChart(){
 
     if(inicialText != null){
-        document.getElementById('legenda').innerHTML = inicialText;
+        document.getElementById('legenda').innerText = inicialText;
     }
 
     console.log(diceArray);
@@ -709,34 +729,14 @@ function renderGraph() {
         document.getElementById('chart'),
         config
     );
-
-    for (var i = 2; i>0; i--) {
-        charts[i] = charts[i-1];
-    }
-    charts[0] = config;
-
-    if (chartIndex >= 0){
-        renderHistory(1,charts[0],'chart1');
-        document.getElementById('chart4').style.display = "inline-block";
-    } 
-    if (chartIndex > 0){
-        renderHistory(2,charts[1],'chart2');
-        document.getElementById('chart5').style.display = "inline-block";
-    } 
-    if (chartIndex > 1){
-        renderHistory(3,charts[2],'chart3');
-        document.getElementById('chart6').style.display = "inline-block";
-    } 
-
-    chartIndex++
     
 }
 
 function historyOn() {
-    if (document.getElementById('history').style.display != 'none') {
-        document.getElementById('history').style.display = 'none';
-    } else {
+    if (document.getElementById('history').style.display != 'block') {
         document.getElementById('history').style.display = 'block';
+    } else {
+        document.getElementById('history').style.display = 'none';
     }
 }
 
