@@ -1,6 +1,7 @@
 var inicialText;
 var text;
 var diceArray = new Array();
+var halfArray = new Array();
 var expandedText = new Array();
 var difficultyClass;
 var bonus;
@@ -16,6 +17,8 @@ var disadvantageBool;
 var add;
 var charts = new Array();
 var chartIndex = 0;
+var chartVisibility = 0;
+
 
 function checkError(times, side){
     if (String(times).match(/^[0-9]+$/) == null || String(side).match(/^[0-9]+$/) == null
@@ -204,25 +207,7 @@ function getText(){
         inicialText = input.value;
         text = inicialText;
 
-        for (var i = 2; i>0; i--) {
-            charts[i] = charts[i-1];
-        }
-        charts[0] = config;
-
-        if (chartIndex > 0){
-            document.getElementById('historyB').style.visibility = "visible";
-            renderHistory(1,charts[0],'chart1');
-            document.getElementById('chart4').style.display = "inline-block";
-        } 
-        if (chartIndex > 1){
-            renderHistory(2,charts[1],'chart2');
-            document.getElementById('chart5').style.display = "inline-block";
-        } 
-        if (chartIndex > 2){
-            renderHistory(3,charts[2],'chart3');
-            document.getElementById('chart6').style.display = "inline-block";
-        } 
-        chartIndex++
+        historyStart();
 
         if (text != ""){
         document.getElementById('chart').style.visibility = "visible";
@@ -420,7 +405,6 @@ function increases(tempDiceArray, j, s, next) {
             tempDiceArray[s] += add;
         }
     }
-    console.log(tempDiceArray);
     return tempDiceArray;
 }
 
@@ -435,7 +419,6 @@ function minusDice(times, side) {
             }
         }
     }
-    console.log(tempDiceArray);
     diceArray = tempDiceArray;
 }
 
@@ -461,7 +444,6 @@ function addDice(times, side){
         } else {
             for (var j = 0; j<diceArray.length; j++) {
                 if (diceArray[j] != null) {
-                    console.log(diceArray);
                     for (var s = 1; s<=side; s++) {
                         tempDiceArray = increases(tempDiceArray,j,s,true)
                         if (s <= reRoll && reRoll != 0) {
@@ -557,7 +539,6 @@ function advantage(sortDices, reduceTimes) {
 
     if (!disadvantageBool) {
         sortDices.sort(function(a, b){return a - b});
-        console.log(sortDices);
     } else {
         sortDices.sort(function(a, b){return b - a});
     }
@@ -567,7 +548,6 @@ function advantage(sortDices, reduceTimes) {
     }
     var j = sortDices.reduce((a, b) => a + b, 0);
     diceArray = increases(diceArray,j,0,false)
-    console.log(diceArray);
 
 }
 
@@ -580,6 +560,7 @@ function createChart(){
     console.log(diceArray);
 
     var tempDiceArray = new Array();
+    var tempHalfArray = new Array();
     var j = 0;
     while (diceArray[j] === null || isNaN(diceArray[j])) {
         j++;
@@ -588,12 +569,16 @@ function createChart(){
     for (var i = 0; i<diceArray.length-k; i++) {
         
         if (diceArray[j] != null) {
-            
-          tempDiceArray[i] = diceArray[j];
-          j++;
+            if (halfArray[j] == null) {
+                halfArray[j] = 0;
+            }
+            tempHalfArray[i] = halfArray[j];
+            tempDiceArray[i] = diceArray[j];
+            j++;
         }
     }
     diceArray = tempDiceArray;
+    halfArray = tempHalfArray;
     var average = 0;
     var probabilityArray = new Array();
     for (var i = 0; i<diceArray.length; i++) {
@@ -607,6 +592,7 @@ function createChart(){
     document.getElementById("average").style.visibility = "visible";
 
     console.log(diceArray);
+    console.log(halfArray);
 
     let labels = new Array();
     var l = k;
@@ -662,7 +648,6 @@ function createChart(){
     label = '100';
     label += '%';
 
-    console.log(backgroundColor);
     data = {
     labels: labels,
     datasets: [{
@@ -673,7 +658,18 @@ function createChart(){
         borderRadius: 5,
         minBarThickness: 30,
         maxBarThickness: 100,
-        data: probabilityArray,  
+        data: probabilityArray, 
+        stack: 'Stack 0', 
+    },{
+        skipNull: true,
+        label: label,
+        backgroundColor: 'rgb(255,140,0)',
+        borderColor: 'rgb(255,140,0)',
+        borderRadius: 5,
+        minBarThickness: 30,
+        maxBarThickness: 100,
+        data: halfArray,  
+        stack: 'Stack 0',
     }]};
 
     config = {
@@ -691,17 +687,22 @@ function createChart(){
                     
                 }
             },
+            interaction: {
+              intersect: true,
+            },
             scales: {
                 x: {
                     reverse: d100,
                     ticks: {
                         color: 'white'
-                    }
+                    },
+                    stacked: true,
                 },
                 y: {
                     ticks: {
                         color: 'white'
-                    }
+                    },
+                    stacked: true,
                 },
                 percentage: {
                     type: 'linear',
@@ -732,47 +733,100 @@ function renderGraph() {
     
 }
 
+function historyStart() {
+
+        if (chartIndex == 1){
+            document.getElementById('historyB').style.visibility = "visible";
+            renderHistory(1);
+            renderHistory(2)
+            renderHistory(3)
+            chartIndex++;
+        } 
+        if (chartIndex == 2){
+            renderHistory(1)
+            chartVisibility++;
+        } 
+        if (chartIndex == 3){
+            renderHistory(2);
+            chartVisibility++;
+        } 
+        if (chartIndex == 4){
+            renderHistory(3);
+            chartVisibility++;
+        } 
+        if (document.getElementById('history').style.visibility == 'visible') {
+            if (chartVisibility > 0) {
+                document.getElementById('chart1').style.visibility = 'visible';
+            }
+            if (chartVisibility > 1) {
+                document.getElementById('chart2').style.visibility = 'visible';
+            }
+            if (chartVisibility > 2) {
+                document.getElementById('chart3').style.visibility = 'visible';
+            }
+        }
+        chartIndex++
+        if (chartIndex == 5) {
+            chartIndex = 2;
+        }
+}
+
 function historyOn() {
-    if (document.getElementById('history').style.display != 'block') {
-        document.getElementById('history').style.display = 'block';
+    if (document.getElementById('history').style.visibility != 'visible') {
+        document.getElementById('history').style.visibility = 'visible';
+        if (chartVisibility > 0) {
+            document.getElementById('chart1').style.visibility = 'visible';
+        }
+        if (chartVisibility > 1) {
+            document.getElementById('chart2').style.visibility = 'visible';
+        }
+        if (chartVisibility > 2) {
+            document.getElementById('chart3').style.visibility = 'visible';
+        }
     } else {
-        document.getElementById('history').style.display = 'none';
+        document.getElementById('history').style.visibility = 'hidden';
+        document.getElementById('chart1').style.visibility = 'hidden';
+        document.getElementById('chart2').style.visibility = 'hidden';
+        document.getElementById('chart3').style.visibility = 'hidden';
+        document.getElementById('chart4').style.visibility = 'hidden';
+        document.getElementById('chart5').style.visibility = 'hidden';
+        document.getElementById('chart6').style.visibility = 'hidden';
     }
 }
 
-function renderHistory(chart,config,id) {
+function renderHistory(id) {
 
     // Destroy old graph
-    if (chart == 1) {
+    if (id == 1) {
         if (chart1) {
             chart1.destroy();
         }
     
         // Render chart
         chart1 = new Chart(
-            document.getElementById(id),
+            document.getElementById('chart1'),
             config
         );
     }
-    if (chart == 2) {
+    if (id == 2) {
         if (chart2) {
             chart2.destroy();
         }
-    
+        
         // Render chart
         chart2 = new Chart(
-            document.getElementById(id),
+            document.getElementById('chart2'),
             config
         );
     }
-    if (chart == 3) {
+    if (id == 3) {
         if (chart3) {
             chart3.destroy();
         }
-    
+
         // Render chart
         chart3 = new Chart(
-            document.getElementById(id),
+            document.getElementById('chart3'),
             config
         );
     }

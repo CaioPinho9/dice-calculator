@@ -154,7 +154,8 @@ button{
     box-shadow: 5px 3px 5px 3px rgba(11, 15, 20, 0.719);    
     margin: 0 auto;
     text-align: center;
-    display: none;
+    display: block;
+    visibility: hidden;
 }
 
 #chart1,#chart2,#chart3 {
@@ -166,13 +167,14 @@ button{
     height: 300px;
     border: 3px solid rgb(20, 152, 222);
     border-radius: 10px;
-    visibility: visible;
+    visibility: hidden;
 }
 
 #chart4,#chart5,#chart6 {
-    display: none;
+    display: inline-block;
     width: 250px;
     height: 300px;
+    visibility: hidden;
 }
 
 #learn {
