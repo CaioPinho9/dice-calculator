@@ -553,10 +553,6 @@ function advantage(sortDices, reduceTimes) {
 
 function createChart(){
 
-    if(inicialText != null){
-        document.getElementById('legenda').innerText = inicialText;
-    }
-
     console.log(diceArray);
 
     var tempDiceArray = new Array();
@@ -677,6 +673,17 @@ function createChart(){
         data: data,
         options: {
             plugins: {
+                title: {
+                    display: true,
+                    text: inicialText,
+                    color: "white",
+                    position: 'bottom',
+                    padding: 0,
+                    font: {
+                        size: 16,
+                        weight: 100,
+                    }
+                },
                 legend: {
                     display: false,
                     labels: {
