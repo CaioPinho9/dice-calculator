@@ -48,40 +48,89 @@ function roll() {
     text =  text.replaceAll("AC", "DC");
     var number = 0;
     var bonus = 0;
+    var difficultyClass = 0;
+    var attack = true;
+    var half = false;
+    var fail = false;
 
-    if (text.includes("DC")) {
-        var tempinicialtext;
-        tempinicialtext = text.split("DC",2);
-        text = tempinicialtext[0];
-    }
-
-    if (text.includes("+")) {
-        expandedText = text.split("+", 12);
-        for (var indexText = 0; indexText < expandedText.length; indexText++) {
-
-            add = 1;
-            if (expandedText[indexText].includes("-")){
-                add = -1;
-                expandedText[indexText] = expandedText[indexText].replaceAll("-", "");
+    while (attack) {
+        
+        if (text.includes("/")) {
+            attackText = text.split("/",2);
+            attack = true;
+            text = attackText[0];
+            if (text == "") {
+                text = "1D20DC10";
             }
-
-            if (expandedText[indexText].includes("D")) {
-                reroll(indexText);
-                number += readRoll(indexText); 
-            } else {
-                bonus += Number(expandedText[indexText]*add);
-                number += bonus;
+        } else {
+            attack = false;
+            if (attackText[1] != null) {
+                text = attackText[1];
             }
-            add = 1;
         }
 
-    } else if (text.includes("D")) {
-        expandedText[0] = text;
-        reroll(0);
-        number += readRoll(0);
+        if (attackText[1].includes("HALF")) {
+            var tempText;
+            tempText = attackText[1].split("HALF",2);
+            attackText[1] = tempText[0];
+            half = true;
+        }
 
-    } else if (text.match(/^[0-9]+$/) != null) {
-        number = text;
+        if (text.includes("DC")) {
+            var tempText;
+            tempText = text.split("DC",2);
+            text = tempText[0];
+            difficultyClass = tempText[1];
+            if (text == "") {
+                text = "1D20";
+            }
+        }
+
+        number = 0;
+
+        if (text.includes("+")) {
+            expandedText = text.split("+", 12);
+            for (var indexText = 0; indexText < expandedText.length; indexText++) {
+
+                add = 1;
+                if (expandedText[indexText].includes("-")){
+                    add = -1;
+                    expandedText[indexText] = expandedText[indexText].replaceAll("-", "");
+                }
+
+                if (expandedText[indexText].includes("D")) {
+                    reroll(indexText);
+                    number += readRoll(indexText);
+                } else {
+                    bonus += Number(expandedText[indexText]*add);
+                    number += bonus;
+                }
+                add = 1;
+            }
+
+        } else if (text.includes("D")) {
+            expandedText[0] = text;
+            reroll(0);
+            number += readRoll(0);
+
+        } else if (text.match(/^[0-9]+$/) != null) {
+            number = text;
+        }
+
+        if (!half && number < difficultyClass && attack) {
+            number = 0;
+            break;
+        }
+
+        if (fail) {
+            number = Math.floor(number/2);
+            break;
+        }
+
+        if (half && number >= difficultyClass) {
+            fail = true;
+        }
+
     }
     result.innerHTML = number;
     result.style.visibility = "visible";
@@ -254,11 +303,10 @@ function expand(){
         }
 
         if (text.includes("DC")) {
-            var tempinicialtext;
-            tempinicialtext = text.split("DC",2);
-            text = tempinicialtext[0];
-            difficultyClass = tempinicialtext[1];
-            console.log(difficultyClass);
+            var tempText;
+            tempText = text.split("DC",2);
+            text = tempText[0];
+            difficultyClass = tempText[1];
             if (text == "") {
                 text = "1D20";
             }
@@ -303,7 +351,6 @@ function expand(){
                     
                 } else {
                     bonus += Number(expandedText[indexText]);
-                    console.log(bonus);
                     var tempDiceArray = new Array();
                     for (var i = 0; i<diceArray.length; i++) {
                         if (diceArray[i] != null){
@@ -361,9 +408,9 @@ function finish(fail, half) {
             if (diceArray[i] != null) {
                 if (Math.floor(i/2) > 0){
                     if (halfArray[Math.floor(i/2)] == null) {
-                        halfArray[Math.floor(i/2)] = diceArray[i]*((100-fail)/100);
+                        halfArray[Math.floor(i/2)] = diceArray[i]*(100-fail)/(fail);
                     } else {
-                        halfArray[Math.floor(i/2)] += diceArray[i]*((100-fail)/100);
+                        halfArray[Math.floor(i/2)] += diceArray[i]*(100-fail)/(fail);
                     }
                 } else {
                     if (halfArray[0] == null) {
