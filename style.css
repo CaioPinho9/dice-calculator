@@ -76,12 +76,12 @@ p{
 
 h2{
     text-align: left;
-    margin-left: 40px;
+    margin-left: 20px;
 }
 
 li{
     color: rgb(20, 152, 222);
-    margin-left: 60px;
+    margin-left: 10px;
 }
 
 #button{
@@ -131,7 +131,7 @@ button{
     text-align:center;
 }
 
-#legend1, #legend2{
+#legend1, #legend2, #legend3{
     display: none;
 }
 
@@ -141,10 +141,13 @@ button{
 }
 
 #history {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
     max-height: 140px;
     max-width: 800px;
     min-height: 140px;
-    min-width: 400px;
+    min-width: 800px;
     border: 5px solid rgb(20, 152, 222);
     border-radius: 10px;
     padding: 10px;
@@ -178,6 +181,7 @@ button{
 }
 
 #learn {
+    position: relative;
     display: block;
 }
 

@@ -1,8 +1,8 @@
 var inicialText;
 var text;
 var diceArray = new Array();
-var halfArray = new Array();
 var expandedText = new Array();
+var label;
 var difficultyClass;
 var bonus;
 let data;
@@ -194,15 +194,6 @@ function readRoll(indexText) {
 }
 
 function getText(){
-        difficultyClass = 0;
-        bonus = 0;
-        reRoll = 0;
-        firstDice = true;
-        error = false;
-        d100 = false;
-        advantageBool = false;
-        disadvantageBool = false;
-        add = 1;
         var input = document.querySelector("#text");
         inicialText = input.value;
         text = inicialText;
@@ -214,13 +205,14 @@ function getText(){
         document.getElementById('buttons').style.visibility = "visible";
         input.value = null;
         expand();
-        if (!error){
-            createChart();
-        }
     }
 }
 
 function expand(){
+    var attackText = new Array();
+    var attack = true;
+    var half = false;
+    var fail = 0;
     diceArray = new Array();
     text = text.toUpperCase();
     text = text.replaceAll(" ", "");
@@ -230,77 +222,283 @@ function expand(){
     text = text.replaceAll("CA", "DC");
     text =  text.replaceAll("AC", "DC");
 
-    if (text.includes("DC")) {
-        var tempinicialtext;
-        tempinicialtext = text.split("DC",2);
-        text = tempinicialtext[0];
-        difficultyClass = tempinicialtext[1];
-        console.log(difficultyClass);
-    }
-
-    if (text.includes("+")) {
-        expandedText = text.split("+", 12);
-        for (var indexText = 0; indexText < expandedText.length; indexText++) {
-
-            add = 1;
-            if (expandedText[indexText].includes("-")){
-                add = -1;
-                expandedText[indexText] = expandedText[indexText].replaceAll("-", "");
-        
+    while (attack) {
+        difficultyClass = 0;
+        bonus = 0;
+        reRoll = 0;
+        firstDice = true;
+        error = false;
+        d100 = false;
+        advantageBool = false;
+        disadvantageBool = false;
+        add = 1;
+        if (text.includes("/")) {
+            attackText = text.split("/",2);
+            attack = true;
+            text = attackText[0];
+            if (text == "") {
+                text = "1D20DC10";
             }
-
-            if (expandedText[indexText].includes("D") && firstDice) {
-                reroll(indexText);
-                readDice(indexText);
-                firstDice = false;
-
-            } else if (expandedText[indexText].includes("D") && !firstDice) {
-                reroll(indexText);
-                var division = expandedText[indexText].split("D", 2);
-                var times;
-                var side;
-                if (!division[0] == "") {
-                    times = division[0];
-                } else {
-                    times = 1;
-                }
-                if (!division[1] == "") {
-                    side = division[1];
-                } else {
-                    side = 20;
-                }
-                if (add > 0) {
-                    addDice(times, side);
-                } else {
-                    minusDice(times, side);
-                }
-                
-            } else {
-                bonus += Number(expandedText[indexText]);
-                console.log(bonus);
-                var tempDiceArray = new Array();
-                for (var i = 0; i<diceArray.length; i++) {
-                    if (diceArray[i] != null){
-                        tempDiceArray = increases(tempDiceArray,i,bonus,true);
-                    }
-                }
-                diceArray = tempDiceArray;
+        } else {
+            attack = false;
+            if (attackText[1] != null) {
+                text = attackText[1];
             }
-            add = 1;
         }
 
-    } else if (text.includes("D")) {
-        expandedText[0] = text;
-        reroll(0);
-        readDice(0);
+        if (text.includes("HALF")) {
+            var tempText;
+            tempText = text.split("HALF",2);
+            text = tempText[0];
+            half = true;
+        }
 
-    } else if (text.match(/^[0-9]+$/) != null) {
-        diceArray[text] = 1;
+        if (text.includes("DC")) {
+            var tempinicialtext;
+            tempinicialtext = text.split("DC",2);
+            text = tempinicialtext[0];
+            difficultyClass = tempinicialtext[1];
+            console.log(difficultyClass);
+            if (text == "") {
+                text = "1D20";
+            }
+        }
 
-    } else {
-        console.error('Invalid Expression')
-        error = true;
+        if (text.includes("+")) {
+            expandedText = text.split("+", 12);
+            for (var indexText = 0; indexText < expandedText.length; indexText++) {
+
+                add = 1;
+                if (expandedText[indexText].includes("-")){
+                    add = -1;
+                    expandedText[indexText] = expandedText[indexText].replaceAll("-", "");
+            
+                }
+
+                if (expandedText[indexText].includes("D") && firstDice) {
+                    reroll(indexText);
+                    readDice(indexText);
+                    firstDice = false;
+
+                } else if (expandedText[indexText].includes("D") && !firstDice) {
+                    reroll(indexText);
+                    var division = expandedText[indexText].split("D", 2);
+                    var times;
+                    var side;
+                    if (!division[0] == "") {
+                        times = division[0];
+                    } else {
+                        times = 1;
+                    }
+                    if (!division[1] == "") {
+                        side = division[1];
+                    } else {
+                        side = 20;
+                    }
+                    if (add > 0) {
+                        addDice(times, side);
+                    } else {
+                        minusDice(times, side);
+                    }
+                    
+                } else {
+                    bonus += Number(expandedText[indexText]);
+                    console.log(bonus);
+                    var tempDiceArray = new Array();
+                    for (var i = 0; i<diceArray.length; i++) {
+                        if (diceArray[i] != null){
+                            tempDiceArray = increases(tempDiceArray,i,bonus,true);
+                        }
+                    }
+                    diceArray = tempDiceArray;
+                }
+                add = 1;
+            }
+
+        } else if (text.includes("D")) {
+            expandedText[0] = text;
+            reroll(0);
+            readDice(0);
+
+        } else if (text.match(/^[0-9]+$/) != null) {
+            diceArray[text] = 1;
+
+        } else {
+            console.error('Invalid Expression')
+            error = true;
+        }
+        if (!error){
+            if (attack) {
+                fail = attackProbability();
+                diceArray = new Array();
+            } else {
+                finish(fail, half);
+            }
+        }
     }
+}
+
+function attackProbability() {
+    var fail = 0;
+    for (var i = 0; i<diceArray.length; i++) {
+        if (i<difficultyClass && diceArray[i] != null) {
+            fail += (diceArray[i]/diceArray.reduce((a, b) => a + b, 0))*100
+        }
+    }
+    fail.toFixed(2);
+    return fail;
+}
+
+function finish(fail, half) {
+    var halfArray = new Array();
+    if (fail != 0 && !half) {
+        diceArray[0] = (fail*diceArray.reduce((a, b) => a + b, 0))/(100-fail);
+        difficultyClass = 1;
+    }
+    
+    if (half) {
+        for (var i = 0; i<diceArray.length; i++) {
+            if (diceArray[i] != null) {
+                if (Math.floor(i/2) > 0){
+                    if (halfArray[Math.floor(i/2)] == null) {
+                        halfArray[Math.floor(i/2)] = diceArray[i]*((100-fail)/100);
+                    } else {
+                        halfArray[Math.floor(i/2)] += diceArray[i]*((100-fail)/100);
+                    }
+                } else {
+                    if (halfArray[0] == null) {
+                        halfArray[0] = diceArray[i]*((100-fail)/100);
+                    } else {
+                        halfArray[0] += diceArray[i]*((100-fail)/100);
+                    }
+                }   
+            }
+        }
+    }
+
+    var tempDiceArray = new Array();
+    var tempHalfArray = new Array();
+    var tempCritArray = new Array();
+    var j = 0;
+    while (diceArray[j] === null || isNaN(diceArray[j])) {
+        j++;
+    }     
+
+    if (half) {
+        j = 0;
+        while (halfArray[j] === null || isNaN(halfArray[j])) {
+            j++;
+        }     
+    }
+
+    var k = j;
+    var i = 0;
+    while (diceArray[j] != null || halfArray[j] != null || i<diceArray.length-k) {
+        
+        if (diceArray[j] == null) {
+            diceArray[j] = 0;
+        }
+        if (halfArray[j] == null) {
+            halfArray[j] = 0;
+        }
+        tempHalfArray[i] = halfArray[j];
+        tempDiceArray[i] = diceArray[j];
+        j++;
+        i++
+    }
+    diceArray = tempDiceArray;
+    halfArray = tempHalfArray;
+
+    var average = 0;
+    var probabilityArray = new Array();
+    var halfProbabilityArray = new Array();
+    for (var i = 0; i<diceArray.length; i++) {
+        if (diceArray[i] != 0 || halfArray[i] != 0) {
+            probabilityArray[i] = ((diceArray[i]/(diceArray.reduce((a, b) => a + b, 0)+halfArray.reduce((a, b) => a + b, 0)))*100).toFixed(2);
+            halfProbabilityArray[i] = ((halfArray[i]/(diceArray.reduce((a, b) => a + b, 0)+halfArray.reduce((a, b) => a + b, 0)))*100).toFixed(2);      
+            
+            if (diceArray[i] != null) {
+                average += diceArray[i]*i;
+            }
+            if (halfArray[i] != null) {
+                average += halfArray[i]*i;
+            }
+        }
+    }
+    average = average/(diceArray.reduce((a, b) => a + b, 0)+halfArray.reduce((a, b) => a + b, 0));
+    average += k;
+    average = average.toFixed(2);
+
+    var backgroundColor = difficultyClassColor(probabilityArray, k, half, fail);
+
+    if (!error){
+        createChart(k, average, probabilityArray, halfProbabilityArray, backgroundColor);
+    }
+}
+
+function difficultyClassColor(probabilityArray, k, half, fail) {
+    var backgroundColor = new Array();
+    label = 100;
+    if (difficultyClass != 0){
+        for (var i = 0; i<probabilityArray.length; i++) {
+            if (!d100){
+                if (i+k<difficultyClass) {
+                    backgroundColor.push('red');
+                    label -= probabilityArray[i];
+                } else {
+                    backgroundColor.push('rgb(20, 152, 222)');
+                }
+            } else {
+                if (i+k>difficultyClass) {
+                    backgroundColor.push('red');
+                    label -= probabilityArray[i];
+                } else {
+                    backgroundColor.push('rgb(20, 152, 222)');
+                }
+            }
+        }
+    } else {
+        backgroundColor.push('rgb(20, 152, 222)');
+    }
+
+    if (half) {
+        var legend1 = document.getElementById('legend1');
+        var legend2 = document.getElementById('legend2');
+        var legendLabel = [];
+        legendLabel[0] = (100-fail).toFixed(2);
+        legendLabel[0] += '%';
+        legendLabel[1] = (fail).toFixed(2);
+        legendLabel[1] += '%';
+        legend1.innerHTML = legendLabel[0];
+        legend2.innerHTML = legendLabel[1];
+        legend1.style.backgroundColor = 'rgb(255,140,0)';
+        legend1.style.display = 'inline';
+        legend2.style.display = 'inline';
+    } else if (difficultyClass != 0){
+        var legend1 = document.getElementById('legend1');
+        var legend2 = document.getElementById('legend2');
+        var legendLabel = [];
+        legendLabel[0] = (100-label).toFixed(2);
+        legendLabel[0] += '%';
+        legendLabel[1] = (label).toFixed(2);
+        legendLabel[1] += '%';
+        legend1.innerHTML = legendLabel[0];
+        legend2.innerHTML = legendLabel[1];
+        legend1.style.backgroundColor = 'red';
+        legend1.style.display = 'inline';
+        legend2.style.display = 'inline';
+    } else {
+        var legend1 = document.getElementById('legend1');
+        var legend2 = document.getElementById('legend2');
+        legend1.style.backgroundColor = 'rgb(20, 152, 222)';
+        legend1.style.display = 'block';
+        legend2.style.display = 'none';
+        legend1.innerHTML = '100%';
+        
+    }
+    label = '100';
+    label += '%';
+    return backgroundColor;
 }
 
 function readDice(indexText) {
@@ -551,44 +749,10 @@ function advantage(sortDices, reduceTimes) {
 
 }
 
-function createChart(){
+function createChart(k, average, probabilityArray, halfProbabilityArray, backgroundColor){
 
-    console.log(diceArray);
-
-    var tempDiceArray = new Array();
-    var tempHalfArray = new Array();
-    var j = 0;
-    while (diceArray[j] === null || isNaN(diceArray[j])) {
-        j++;
-    }     
-    var k = j;
-    for (var i = 0; i<diceArray.length-k; i++) {
-        
-        if (diceArray[j] != null) {
-            if (halfArray[j] == null) {
-                halfArray[j] = 0;
-            }
-            tempHalfArray[i] = halfArray[j];
-            tempDiceArray[i] = diceArray[j];
-            j++;
-        }
-    }
-    diceArray = tempDiceArray;
-    halfArray = tempHalfArray;
-    var average = 0;
-    var probabilityArray = new Array();
-    for (var i = 0; i<diceArray.length; i++) {
-        probabilityArray[i] = ((diceArray[i]/diceArray.reduce((a, b) => a + b, 0))*100).toFixed(2);
-        average += diceArray[i]*i;
-    }
-    average = average/diceArray.reduce((a, b) => a + b, 0);
-    average += k;
-    average = average.toFixed(2);
     document.getElementById("average").innerHTML = "Média: " + average;
     document.getElementById("average").style.visibility = "visible";
-
-    console.log(diceArray);
-    console.log(halfArray);
 
     let labels = new Array();
     var l = k;
@@ -599,50 +763,6 @@ function createChart(){
             i++;
         }
     }
-
-    var backgroundColor = new Array();
-    var label = 100;
-    if (difficultyClass != 0){
-        for (var i = 0; i<probabilityArray.length; i++) {
-            if (!d100){
-                if ((i+l)<difficultyClass) {
-                    backgroundColor.push('red');
-                    label -= probabilityArray[i];
-                } else {
-                    backgroundColor.push('rgb(20, 152, 222)');
-                }
-            } else {
-                if ((i+l)>difficultyClass) {
-                    backgroundColor.push('red');
-                    label -= probabilityArray[i];
-                } else {
-                    backgroundColor.push('rgb(20, 152, 222)');
-                }
-            }
-        }
-        var legend1 = document.getElementById('legend1');
-        var legend2 = document.getElementById('legend2');
-        var legendLabel = [];
-        legendLabel[0] = (100-label).toFixed(2);
-        legendLabel[0] += '%';
-        legendLabel[1] = (label).toFixed(2);
-        legendLabel[1] += '%';
-        legend1.innerHTML = legendLabel[0];
-        legend2.innerHTML = legendLabel[1];
-        legend1.style.backgroundColor = 'red';
-        legend1.style.display = 'inline';
-        legend2.style.display = 'inline';
-    } else {
-        var legend1 = document.getElementById('legend1');
-        var legend2 = document.getElementById('legend2');
-        legend1.style.backgroundColor = 'rgb(20, 152, 222)';
-        legend1.style.display = 'block';
-        legend2.style.display = 'none';
-        legend1.innerHTML = '100%';
-        backgroundColor.push('rgb(20, 152, 222)')
-    }
-    label = '100';
-    label += '%';
 
     data = {
     labels: labels,
@@ -664,7 +784,7 @@ function createChart(){
         borderRadius: 5,
         minBarThickness: 30,
         maxBarThickness: 100,
-        data: halfArray,  
+        data: halfProbabilityArray,  
         stack: 'Stack 0',
     }]};
 
@@ -790,6 +910,7 @@ function historyOn() {
         if (chartVisibility > 2) {
             document.getElementById('chart3').style.visibility = 'visible';
         }
+        document.getElementById('learn').style
     } else {
         document.getElementById('history').style.visibility = 'hidden';
         document.getElementById('chart1').style.visibility = 'hidden';
