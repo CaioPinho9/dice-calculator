@@ -49,14 +49,19 @@ body {
     
 }
 
+#inputD {
+    size-adjust: auto;
+    margin-right: 20px;
+}
+
 input[type="text"], textarea{
     color: rgb(20, 152, 222);
     border-color: rgb(20, 152, 222);
     box-shadow: 2px 2px 2px 1px rgba(11, 15, 20, 0.719);
     background-color: rgb(31, 63, 105);
-    width:  770px;
     height: 20px;
     border-radius: 5px;
+    width: 100%;
     
 }
 
