@@ -5,16 +5,16 @@
 
 body {
     font-family: 'Nunito', sans-serif;
-    background-image: url("Perfil Icone.png");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: auto;
     margin-bottom: auto;
     background-color: rgb(31, 43, 59);
     
 }
 
 #chartD{
+    background-image: url("Perfil Icone.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: auto;
     max-height: 800px;
     max-width: 800px;
     min-height: 200px;
